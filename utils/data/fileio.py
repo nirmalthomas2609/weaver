@@ -19,7 +19,7 @@ def _read_hdf5(filepath, branches, load_range=None):
 
 
 def _read_root(filepath, branches, load_range=None, treename=None):
-    import uproot
+    import uproot3 as uproot
     with uproot.open(filepath) as f:
         if treename is None:
             treenames = set([k.decode('utf-8').split(';')[0] for k, v in f.allitems() if getattr(v, 'classname', '') == 'TTree'])
@@ -73,7 +73,7 @@ def _read_files(filelist, branches, load_range=None, show_progressbar=False, **k
             _logger.error(traceback.format_exc())
         if a is not None:
             for name in branches:
-                table[name].append(a[name].astype('float32'))
+                table[name].append(a[name.encode(encoding='utf-8')].astype('float32'))
     table = {name:_concat(arrs) for name, arrs in table.items()}
     if len(table[branches[0]]) == 0:
         raise RuntimeError(f'Zero entries loaded when reading files {filelist} with `load_range`={load_range}.')
