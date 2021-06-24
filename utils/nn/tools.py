@@ -43,6 +43,7 @@ def train(model, loss_func, opt, scheduler, train_loader, dev, grad_scaler=None)
     start_time = time.time()
 
     loss_array = []
+    print("### data_config.input_names:\n", data_config.input_names)
     with tqdm.tqdm(train_loader) as tq:
         for X, y, _ in tq:
             inputs = [X[k].to(dev) for k in data_config.input_names]

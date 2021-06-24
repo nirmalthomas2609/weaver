@@ -2,7 +2,11 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pdf
 
+dataset/
+data/
+model_checkpoints/
 # C extensions
 *.so
 

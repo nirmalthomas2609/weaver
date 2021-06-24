@@ -16,11 +16,11 @@ preprocess:
   data_fraction: 
 
 inputs:
-   pf_points:
-      length: 100
-      vars: 
-         - pfcand_etarel
-         - pfcand_phirel
+   # pf_points:
+   #   length: 100
+   #   vars: 
+   #      - pfcand_etarel
+   #      - pfcand_phirel
    pf_features:
       length: 100
       vars: 
@@ -55,11 +55,11 @@ inputs:
    #    length: 100
    #    vars: 
    #       - pfcand_mask
-   sv_points:
-     length: 10
-     vars:
-        - sv_etarel 
-        - sv_phirel
+   #sv_points:
+   #  length: 10
+   #  vars:
+   #     - sv_etarel 
+   #     - sv_phirel
    sv_features:
      length: 10
      vars:

@@ -79,7 +79,7 @@ def train_load(args):
     :return: train_loader, val_loader, data_config, train_inputs
     """
     filelist = sorted(sum([glob.glob(f) for f in args.data_train], []))
-    print('filelist ',filelist)
+    print('#### filelist ',filelist)
     # np.random.seed(1)
     np.random.shuffle(filelist)
     if args.demo:

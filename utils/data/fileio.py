@@ -56,6 +56,7 @@ def _read_files(filelist, branches, load_range=None, show_progressbar=False, **k
     table = defaultdict(list)
     if show_progressbar:
         filelist = tqdm.tqdm(filelist)
+        print("### filelist: ", filelist)
     for filepath in filelist:
         ext = os.path.splitext(filepath)[1]
         if ext not in ('.h5', '.root', '.awkd'):
@@ -73,7 +74,8 @@ def _read_files(filelist, branches, load_range=None, show_progressbar=False, **k
             _logger.error(traceback.format_exc())
         if a is not None:
             for name in branches:
-                table[name].append(a[name.encode(encoding='utf-8')].astype('float32'))
+                table[name].append(a[name].astype('float32'))
+                # table[name].append(a[name.encode(encoding='utf-8')].astype('float32'))
     table = {name:_concat(arrs) for name, arrs in table.items()}
     if len(table[branches[0]]) == 0:
         raise RuntimeError(f'Zero entries loaded when reading files {filelist} with `load_range`={load_range}.')

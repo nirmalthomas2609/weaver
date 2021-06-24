@@ -144,13 +144,13 @@ class _SimpleIter(object):
                 self.load_range = (offset, offset + interval)
             else:
                 self.load_range = (start_pos, start_pos + interval)
-
+        print("### self.filelist:", self.filelist)
         _logger.debug('Init iter [%d], will load %d (out of %d*%s=%d) files with load_range=%s:\n%s',
                       0 if worker_info is None else worker_info.id,
                       len(self.filelist),
                       len(self._init_filelist), self._file_fraction, int(len(self._init_filelist) * self._file_fraction),
                       str(self.load_range),
-                      '\n'.join(self.filelist[:3]) + '\n ... ' + self.filelist[-1],
+                      #'\n'.join(self.filelist[:1]) + '\n ... ' + self.filelist[-1],
                       )
         # reset iter status
         self.table = None
