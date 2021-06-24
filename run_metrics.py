@@ -177,8 +177,8 @@ def main(args):
     names = args.name.split(',')
     
     # make dict of branches to load
-    #lfeatures = ['fj_sdmass','fj_pt']
-    lfeatures = ['orig_fj_sdmass','orig_fj_pt']
+    lfeatures = ['fj_sdmass','fj_pt']
+    # lfeatures = ['orig_fj_sdmass','orig_fj_pt']
     sameshape = True
     sh = []
     # check if the input files have the same shape
