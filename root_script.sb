@@ -1,0 +1,20 @@
+#!/bin/bash
+#SBATCH --job-name='yifanDL1'
+#SBATCH --output='weaver.%j.%N.out'
+#SBATCH --error='weaver.%j.%N.err'
+#SBATCH --partition=gpux1
+#SBATCH --time=4
+conda activate wmlce-1.7
+#!/bin/bash
+ python train.py \
+ --data-train 'dataset/ntuple_merged_*.root' \
+ --data-config data/ak15_points_pf_sv.yaml \
+ --network-config networks/in_pf_sv.py  \
+ --model-prefix model_checkpoints/ \
+ --num-workers 3 \
+ --gpus 0 \
+ --batch-size 512 \
+ --start-lr 5e-3 \
+ --num-epochs 20 \
+ --optimizer ranger  | tee logs/train.log
+
