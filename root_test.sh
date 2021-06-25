@@ -1,9 +1,10 @@
  python train.py \
- --data-train 'dataset/ntuple_merged_*.root' \
+ --data-test 'dataset/test_root/*.root' \
  --data-config data/ak15_points_pf_sv.yaml \
  --network-config networks/in_pf_sv.py  \
  --model-prefix model_checkpoints/ \
  --num-workers 3 \
+ --predict \
  --gpus 0 \
  --batch-size 512 \
  --start-lr 5e-3 \

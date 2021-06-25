@@ -1,14 +1,4 @@
-#!/bin/bash
-#SBATCH --job-name='yifanDL1'
-#SBATCH --output='weaver.%j.%N.out'
-#SBATCH --error='weaver.%j.%N.err'
-#SBATCH --partition=gpux1
-#SBATCH --time=12
-module load wmlce/1.7.0-py3.7
-#!/bin/bash
-conda init bash
-conda activate wmlce-1.7
-python train.py \
+ python train.py \
  --data-train 'dataset/train_root/ntuple_merged_*.root' \
  --data-config data/ak15_points_pf_sv.yaml \
  --network-config networks/in_pf_sv.py  \
@@ -19,4 +9,3 @@ python train.py \
  --start-lr 5e-3 \
  --num-epochs 20 \
  --optimizer ranger  | tee logs/train.log
-

@@ -22,7 +22,7 @@ inputs:
    #      - pfcand_etarel
    #      - pfcand_phirel
    pf_features:
-      length: 100
+      length: 60
       vars: 
       ### [format 1]: var_name (no transformation)
       ### [format 2]: [var_name, 
@@ -92,19 +92,26 @@ inputs:
    #     - sv_etarel 
    #     - sv_phirel
    sv_features:
-     length: 10
+     length: 5
      vars:
         # - [sv_pt_log, 3, 0.6]
-        - [sv_mass, 3, 0.3]
+        # - [sv_mass, 3, 0.3]
+        - sv_mass
         - sv_etarel
         - sv_phirel
         # - [sv_abseta, 0.7, 1.4]
-        - [sv_ntracks, 3, 1]
-        - [sv_normchi2, 1, 0.5]
-        - [sv_dxy, 0.25, 0.4]
-        - [sv_dxysig, 6.7, 0.03]
-        - [sv_d3d, 0.4, 0.3]
-        - [sv_d3dsig, 6.7, 0.03]
+        # - [sv_ntracks, 3, 1]
+        - sv_ntracks
+        # - [sv_normchi2, 1, 0.5]
+        - sv_normchi2
+        # - [sv_dxy, 0.25, 0.4]
+        - sv_dxy
+        # - [sv_dxysig, 6.7, 0.03]
+        - sv_dxysig
+        # - [sv_d3d, 0.4, 0.3]
+        - sv_d3d
+        # - [sv_d3dsig, 6.7, 0.03]
+        - sv_d3dsig
         - sv_ptrel
         # - sv_erel
         - sv_deltaR
