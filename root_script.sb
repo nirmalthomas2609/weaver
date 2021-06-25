@@ -3,10 +3,12 @@
 #SBATCH --output='weaver.%j.%N.out'
 #SBATCH --error='weaver.%j.%N.err'
 #SBATCH --partition=gpux1
-#SBATCH --time=4
-conda activate wmlce-1.7
+#SBATCH --time=12
+module load wmlce/1.7.0-py3.7
 #!/bin/bash
- python train.py \
+conda init bash
+conda activate wmlce-1.7
+python train.py \
  --data-train 'dataset/ntuple_merged_*.root' \
  --data-config data/ak15_points_pf_sv.yaml \
  --network-config networks/in_pf_sv.py  \
