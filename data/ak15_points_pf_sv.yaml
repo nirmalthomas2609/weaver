@@ -85,7 +85,8 @@ labels:
    type: simple
    value: [
       label_H_bb, #label_H_cc, label_H_qq,
-      label_QCD_bb, label_QCD_cc, label_QCD_b, label_QCD_c, label_QCD_others,
+      sample_isQCD*(label_QCD_others+label_QCD_b+label_QCD_c+label_QCD_bb+label_QCD_cc)
+      # label_QCD_bb, label_QCD_cc, label_QCD_b, label_QCD_c, label_QCD_others,
       ]
    ### [option 2] otherwise use `custom` to define the label, then `value` is a map
    # type: custom
