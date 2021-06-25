@@ -6,8 +6,9 @@ __pycache__/
 *$py.class
 *.pdf
 
+test_plots/
 dataset/
-#data/
+data/*auto.yaml
 model_checkpoints/
 # C extensions
 *.so
