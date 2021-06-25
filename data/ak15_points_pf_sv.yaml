@@ -51,12 +51,12 @@ inputs:
          # - [pfcand_btagSip3dVal, 0, 230]
          # - [pfcand_btagSip3dSig, 0, 1]
          # - [pfcand_btagJetDistVal, 0, 145]
-         - track_ptrel
+         # - track_ptrel
          - track_erel
          - track_phirel
          - track_etarel
          - track_deltaR
-         - track_drminsv
+         # - track_drminsv
          - track_drsubjet1
          - track_drsubjet2
          - track_dz
@@ -71,9 +71,9 @@ inputs:
          - track_dxydxy
          - track_dzdz
          - track_dxydz
-         - track_dphidz
+         # - track_dphidz
          - track_dlambdadz
-         - trackBTag_EtaRel
+        # - trackBTag_EtaRel
          - trackBTag_PtRatio
          - trackBTag_PParRatio
          - trackBTag_Sip2dVal
@@ -92,7 +92,7 @@ inputs:
    #     - sv_etarel 
    #     - sv_phirel
    sv_features:
-     length: 15
+     length: 10
      vars:
         # - [sv_pt_log, 3, 0.6]
         - [sv_mass, 3, 0.3]
@@ -106,10 +106,10 @@ inputs:
         - [sv_d3d, 0.4, 0.3]
         - [sv_d3dsig, 6.7, 0.03]
         - sv_ptrel
-        - sv_erel
+        # - sv_erel
         - sv_deltaR
         - sv_pt
-        - sv_costhetasvpv
+        # - sv_costhetasvpv
    #sv_mask:
    #   length: 10
    #   vars:
