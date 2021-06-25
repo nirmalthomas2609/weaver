@@ -1,3 +1,5 @@
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -5,7 +7,7 @@ __pycache__/
 *.pdf
 
 dataset/
-data/
+#data/
 model_checkpoints/
 # C extensions
 *.so
