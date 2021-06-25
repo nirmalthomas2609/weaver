@@ -4,8 +4,8 @@ from utils.nn.model.IN import INTagger
 
 def get_model(data_config, **kwargs):
 
-    pf_dims = data_config.input_shapes['pf_features'][-1]
-    pf_features_dims = len(data_config.input_dicts['pf_features'])
+    pf_dims = data_config.input_shapes['track_features'][-1]
+    pf_features_dims = len(data_config.input_dicts['track_features'])
     sv_dims = data_config.input_shapes['sv_features'][-1]
     sv_features_dims = len(data_config.input_dicts['sv_features'])
     num_classes = len(data_config.label_value)

@@ -21,7 +21,7 @@ inputs:
    #   vars: 
    #      - pfcand_etarel
    #      - pfcand_phirel
-   pf_features:
+   track_features:
       length: 60
       vars: 
       ### [format 1]: var_name (no transformation)
