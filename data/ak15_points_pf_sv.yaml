@@ -33,24 +33,55 @@ inputs:
       ###              pad_value(optional, default=0)]
          # - [pfcand_pt_log_nopuppi, 0.6, 0.6]
          # - [pfcand_e_log_nopuppi, 1, 0.6]
-         - pfcand_etarel
-         - pfcand_phirel
+         # - pfcand_etarel
+         # - pfcand_phirel
          # - [pfcand_abseta, 0.7, 1.4]
-         - pfcand_charge
-         - [pfcand_VTX_ass, 4, 0.3]
-         - pfcand_lostInnerHits
+         # - pfcand_charge
+         # - [pfcand_VTX_ass, 4, 0.3]
+         # - pfcand_lostInnerHits
          # - [pfcand_normchi2, 5, 0.2]
          # - [pfcand_quality, 0, 0.2]
-         - [pfcand_dz, 0, 170]
-         - [pfcand_dzsig, 0, 1.2]
-         - [pfcand_dxy, 0.0, 250]
-         - [pfcand_dxysig, 0, 1.6]
+         # - [pfcand_dz, 0, 170]
+         # - [pfcand_dzsig, 0, 1.2]
+         # - [pfcand_dxy, 0.0, 250]
+         # - [pfcand_dxysig, 0, 1.6]
          # - [pfcand_btagEtaRel, 2, 0.4]
          # - [pfcand_btagPtRatio, 0, 1]
          # - [pfcand_btagPParRatio, 0, 1]
          # - [pfcand_btagSip3dVal, 0, 230]
          # - [pfcand_btagSip3dSig, 0, 1]
          # - [pfcand_btagJetDistVal, 0, 145]
+         - track_ptrel
+         - track_erel
+         - track_phirel
+         - track_etarel
+         - track_deltaR
+         - track_drminsv
+         - track_drsubjet1
+         - track_drsubjet2
+         - track_dz
+         - track_dzsig
+         - track_dxy
+         - track_dxysig
+         - track_normchi2
+         - track_quality
+         - track_dptdpt
+         - track_detadeta
+         - track_dphidphi
+         - track_dxydxy
+         - track_dzdz
+         - track_dxydz
+         - track_dphidz
+         - track_dlambdadz
+         - trackBTag_EtaRel
+         - trackBTag_PtRatio
+         - trackBTag_PParRatio
+         - trackBTag_Sip2dVal
+         - trackBTag_Sip2dSig
+         - trackBTag_Sip3dVal
+         - trackBTag_Sip3dSig
+         - trackBTag_JetDistVal
+
    # pf_mask:
    #    length: 100
    #    vars: 
@@ -61,7 +92,7 @@ inputs:
    #     - sv_etarel 
    #     - sv_phirel
    sv_features:
-     length: 10
+     length: 15
      vars:
         # - [sv_pt_log, 3, 0.6]
         - [sv_mass, 3, 0.3]
@@ -74,6 +105,11 @@ inputs:
         - [sv_dxysig, 6.7, 0.03]
         - [sv_d3d, 0.4, 0.3]
         - [sv_d3dsig, 6.7, 0.03]
+        - sv_ptrel
+        - sv_erel
+        - sv_deltaR
+        - sv_pt
+        - sv_costhetasvpv
    #sv_mask:
    #   length: 10
    #   vars:

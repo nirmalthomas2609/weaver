@@ -66,8 +66,11 @@ class DataConfig(object):
         self.input_names = tuple(opts['inputs'].keys())
         self.input_dicts = {k: [] for k in self.input_names}
         self.input_shapes = {}
+        print("self.input_names:",self.input_names)
+        print("self.input_dicts:", self.input_dicts)
         for k, o in opts['inputs'].items():
             self.input_shapes[k] = (-1, len(o['vars']), o['length'])
+            print("k=%s, o=%s, self.input_shapes[d]:" %(k, o), self.input_shapes[k])
             for v in o['vars']:
                 v = _as_list(v)
                 self.input_dicts[k].append(v[0])
