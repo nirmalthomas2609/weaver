@@ -13,6 +13,7 @@ class INTagger(nn.Module):
                  pf_features_dims,
                  sv_features_dims,
                  hidden, De, Do,
+                 do_batchnorm=False,
                  **kwargs):
         super(INTagger, self).__init__(**kwargs)
         self.P = pf_features_dims
@@ -25,40 +26,50 @@ class INTagger(nn.Module):
         self.Do = Do
         self.n_targets = num_classes
         self.hidden = hidden
+        self.do_batchnorm = do_batchnorm
         self.assign_matrices()
         self.assign_matrices_SV()
-        self.batchnorm_x = nn.BatchNorm1d(self.P)
-        self.batchnorm_y = nn.BatchNorm1d(self.S)
+        if self.do_batchnorm:
+            self.batchnorm_x = nn.BatchNorm1d(self.P)
+            self.batchnorm_y = nn.BatchNorm1d(self.S)
 
-        self.fr = nn.Sequential(nn.Linear(2 * self.P, self.hidden),
-                                nn.BatchNorm1d(self.hidden),
-                                nn.ReLU(),
-                                nn.Linear(self.hidden, self.hidden),
-                                nn.BatchNorm1d(self.hidden),
-                                nn.ReLU(),
-                                nn.Linear(self.hidden, self.De),
-                                nn.BatchNorm1d(self.De),
-                                nn.ReLU())
+        self.fr_layers = [nn.Linear(2 * self.P, self.hidden),
+                          nn.ReLU(),
+                          nn.Linear(self.hidden, self.hidden),
+                          nn.ReLU(),
+                          nn.Linear(self.hidden, self.De),
+                          nn.ReLU()]
 
-        self.fr_pv = nn.Sequential(nn.Linear(self.S + self.P, self.hidden),
-                                   nn.BatchNorm1d(self.hidden),
-                                   nn.ReLU(),
-                                   nn.Linear(self.hidden, self.hidden),
-                                   nn.BatchNorm1d(self.hidden),
-                                   nn.ReLU(),
-                                   nn.Linear(self.hidden, self.De),
-                                   nn.BatchNorm1d(self.De),
-                                   nn.ReLU())
+        self.fr_pv_layers = [nn.Linear(self.S + self.P, self.hidden),
+                             nn.ReLU(),
+                             nn.Linear(self.hidden, self.hidden),
+                             nn.ReLU(),
+                             nn.Linear(self.hidden, self.De),
+                             nn.ReLU()]
+
+        self.fo_layers = [nn.Linear(self.P + (2 * self.De), self.hidden),
+                          nn.ReLU(),
+                          nn.Linear(self.hidden, self.hidden),
+                          nn.ReLU(),
+                          nn.Linear(self.hidden, self.Do),
+                          nn.ReLU()
+
+        if self.do_batchnorm:
+            self.fr_layers.insert(1, nn.BatchNorm1d(self.hidden))
+            self.fr_layers.insert(4, nn.BatchNorm1d(self.hidden))
+            self.fr_layers.insert(7, nn.BatchNorm1d(self.De))
+            self.fr_pv_layers.insert(1, nn.BatchNorm1d(self.hidden))
+            self.fr_pv_layers.insert(4, nn.BatchNorm1d(self.hidden))
+            self.fr_pv_layers.insert(7, nn.BatchNorm1d(self.De))
+            self.fo_layers.insert(1, nn.BatchNorm1d(self.hidden))
+            self.fo_layers.insert(4, nn.BatchNorm1d(self.hidden))
+            self.fo_layers.insert(7, nn.BatchNorm1d(self.Do))
+
+        self.fr = nn.Sequential(*self.fr_layers)
+
+        self.fr_pv = nn.Sequential(*self.fr_pv_layers)
         
-        self.fo = nn.Sequential(nn.Linear(self.P + (2 * self.De), self.hidden),
-                                nn.BatchNorm1d(self.hidden),
-                                nn.ReLU(),
-                                nn.Linear(self.hidden, self.hidden),
-                                nn.BatchNorm1d(self.hidden),
-                                nn.ReLU(),
-                                nn.Linear(self.hidden, self.Do),
-                                nn.BatchNorm1d(self.Do),
-                                nn.ReLU())
+        self.fo = nn.Sequential(*self.fo_layers)
         
         self.fc_fixed = nn.Linear(self.Do, self.n_targets)
 
@@ -99,8 +110,9 @@ class INTagger(nn.Module):
         return Ebar_pv
         
     def forward(self, x, y):
-        x = self.batchnorm_x(x) # [batch, P, N]
-        y = self.batchnorm_y(y) # [batch, S, Nv]
+        if self.do_batchnorm:
+            x = self.batchnorm_x(x) # [batch, P, N]
+            y = self.batchnorm_y(y) # [batch, S, Nv]
         
         # pf - pf
         Ebar_pp = self.edge_conv(x) # [batch, De, N]
