@@ -16,47 +16,15 @@ preprocess:
   data_fraction: 
 
 inputs:
-   # pf_points:
-   #   length: 100
-   #   vars: 
-   #      - pfcand_etarel
-   #      - pfcand_phirel
    track_features:
       length: 60
       vars: 
-      ### [format 1]: var_name (no transformation)
-      ### [format 2]: [var_name, 
-      ###              subtract_by(optional, default=None, no transf. if preprocess.method=manual, auto transf. if preprocess.method=auto), 
-      ###              multiply_by(optional, default=1), 
-      ###              clip_min(optional, default=-5), 
-      ###              clip_max(optional, default=5), 
-      ###              pad_value(optional, default=0)]
-         # - [pfcand_pt_log_nopuppi, 0.6, 0.6]
-         # - [pfcand_e_log_nopuppi, 1, 0.6]
-         # - pfcand_etarel
-         # - pfcand_phirel
-         # - [pfcand_abseta, 0.7, 1.4]
-         # - pfcand_charge
-         # - [pfcand_VTX_ass, 4, 0.3]
-         # - pfcand_lostInnerHits
-         # - [pfcand_normchi2, 5, 0.2]
-         # - [pfcand_quality, 0, 0.2]
-         # - [pfcand_dz, 0, 170]
-         # - [pfcand_dzsig, 0, 1.2]
-         # - [pfcand_dxy, 0.0, 250]
-         # - [pfcand_dxysig, 0, 1.6]
-         # - [pfcand_btagEtaRel, 2, 0.4]
-         # - [pfcand_btagPtRatio, 0, 1]
-         # - [pfcand_btagPParRatio, 0, 1]
-         # - [pfcand_btagSip3dVal, 0, 230]
-         # - [pfcand_btagSip3dSig, 0, 1]
-         # - [pfcand_btagJetDistVal, 0, 145]
-         # - track_ptrel
+         - track_ptrel
          - track_erel
          - track_phirel
          - track_etarel
          - track_deltaR
-         # - track_drminsv
+         - track_drminsv
          - track_drsubjet1
          - track_drsubjet2
          - track_dz
@@ -71,9 +39,9 @@ inputs:
          - track_dxydxy
          - track_dzdz
          - track_dxydz
-         # - track_dphidz
+         - track_dphidxy
          - track_dlambdadz
-        # - trackBTag_EtaRel
+         - trackBTag_EtaRel
          - trackBTag_PtRatio
          - trackBTag_PParRatio
          - trackBTag_Sip2dVal
@@ -82,45 +50,23 @@ inputs:
          - trackBTag_Sip3dSig
          - trackBTag_JetDistVal
 
-   # pf_mask:
-   #    length: 100
-   #    vars: 
-   #       - pfcand_mask
-   #sv_points:
-   #  length: 10
-   #  vars:
-   #     - sv_etarel 
-   #     - sv_phirel
    sv_features:
      length: 5
      vars:
-        # - [sv_pt_log, 3, 0.6]
-        # - [sv_mass, 3, 0.3]
-        - sv_mass
-        - sv_etarel
-        - sv_phirel
-        # - [sv_abseta, 0.7, 1.4]
-        # - [sv_ntracks, 3, 1]
-        - sv_ntracks
-        # - [sv_normchi2, 1, 0.5]
-        - sv_normchi2
-        # - [sv_dxy, 0.25, 0.4]
-        - sv_dxy
-        # - [sv_dxysig, 6.7, 0.03]
-        - sv_dxysig
-        # - [sv_d3d, 0.4, 0.3]
-        - sv_d3d
-        # - [sv_d3dsig, 6.7, 0.03]
-        - sv_d3dsig
         - sv_ptrel
-        # - sv_erel
+        - sv_erel
+        - sv_phirel
+        - sv_etarel
         - sv_deltaR
         - sv_pt
-        # - sv_costhetasvpv
-   #sv_mask:
-   #   length: 10
-   #   vars:
-        # - sv_mask
+        - sv_mass
+        - sv_ntracks
+        - sv_normchi2
+        - sv_costhetasvpv
+        - sv_dxy
+        - sv_dxysig
+        - sv_d3d
+        - sv_d3dsig
 
 labels:
    ### type can be `simple`, `custom`

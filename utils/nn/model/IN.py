@@ -13,7 +13,7 @@ class INTagger(nn.Module):
                  pf_features_dims,
                  sv_features_dims,
                  hidden, De, Do,
-                 do_batchnorm=False,
+                 do_batchnorm=True,
                  **kwargs):
         super(INTagger, self).__init__(**kwargs)
         self.P = pf_features_dims
@@ -52,7 +52,7 @@ class INTagger(nn.Module):
                           nn.Linear(self.hidden, self.hidden),
                           nn.ReLU(),
                           nn.Linear(self.hidden, self.Do),
-                          nn.ReLU()
+                          nn.ReLU()]
 
         if self.do_batchnorm:
             self.fr_layers.insert(1, nn.BatchNorm1d(self.hidden))
