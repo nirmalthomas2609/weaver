@@ -6,6 +6,8 @@ from typing import Optional
 
 '''Based on https://github.com/WangYueFt/dgcnn/blob/master/pytorch/model.py.'''
 
+def identity(x):
+    return x
 
 def knn(x: Tensor, k: int) -> Tensor:
     inner = -2 * torch.matmul(x.transpose(2, 1), x)
@@ -138,6 +140,8 @@ class ParticleNet(nn.Module):
         super(ParticleNet, self).__init__(**kwargs)
 
         self.use_fts_bn = use_fts_bn
+        self.bn_fts = identity
+
         if self.use_fts_bn:
             self.bn_fts = nn.BatchNorm1d(input_dims)
 
@@ -278,8 +282,41 @@ class ParticleNetTagger(nn.Module):
         return self.pn(points, features, mask)
 
 if __name__ == "__main__":
-    model = ParticleNetTagger(10, 5, 20)
-    model = torch.jit.script(model)
-    print(model)
 
-        
+    conv_params = [
+        (16, (64, 64, 64)),
+        (16, (128, 128, 128)),
+        (16, (256, 256, 256)),
+    ]
+    fc_params = [(256, 0.1)]
+    use_fusion = True
+
+    pf_features_dims = 25
+    sv_features_dims = 11
+    num_classes = 20
+    model = ParticleNetTagger(pf_features_dims, sv_features_dims, num_classes,
+                              conv_params, fc_params,
+                              use_fusion=use_fusion,
+                              use_fts_bn=False,
+                              use_counts=True,
+                              pf_input_dropout=None,
+                              sv_input_dropout=None,
+                              for_inference=True)
+    model = model.to('cuda')
+    model = torch.jit.script(model)
+    model.load_state_dict(torch.load('pn_epoch-19_state.pt'))
+    print(model)
+    
+    n_pf = 100
+    n_sv = 14
+    pf_points = torch.rand((1, 2, n_pf)).to('cuda')
+    pf_features = torch.rand((1, pf_features_dims, n_pf)).to('cuda')
+    pf_mask = torch.ones((1, 1, n_pf)).to('cuda')
+    sv_points = torch.rand((1, 2, n_sv)).to('cuda')
+    sv_features = torch.rand((1, sv_features_dims, n_sv)).to('cuda')
+    sv_mask = torch.ones((1, 1, n_sv)).to('cuda')
+
+    model.eval()
+    out = model(pf_points, pf_features, pf_mask, sv_points, sv_features, sv_mask)
+    print(out)
+    
