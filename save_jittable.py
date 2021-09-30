@@ -8,19 +8,19 @@ if __name__ == "__main__":
 
     device = 'cuda'
     
-    # AK8 General (ONNX & PyTorch disagree)
+    # AK8 General
     data_config_name = 'data/ak8_points_pf_sv_full.yaml'
     import networks.particle_net_pf_sv as network_module
 
-    # AK8 MD (ONNX & PyTorch disagree)
+    # AK8 MD
     #data_config_name = 'data/ak8_points_pf_sv_mass_decorr.yaml'
     #import networks.particle_net_pf_sv as network_module
 
-    # AK4 CHS (ONNX & PyTorch disagree)
+    # AK4 CHS
     #data_config_name = 'data/AK4/ak4_points_pf_sv_CHS_eta4p7.yaml'
     #import networks.particle_net_ak4_pf_sv as network_module
 
-    # AK8 Mass Reg. (ONNX & PyTorch agree)
+    # AK8 Mass Reg.
     #data_config_name = 'data/ak8_points_pf_sv_mass_regression.yaml'
     #import networks.particle_net_pf_sv_mass_regression as network_module
     
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     data_config = SimpleIterDataset([], data_config_name, for_training=False).config
     
-    model, model_info = network_module.get_model(data_config, inference=True)
+    model, model_info = network_module.get_model(data_config, for_inference=True)
     model.to(device)
     model = torch.jit.script(model)
     
