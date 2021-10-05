@@ -35,6 +35,8 @@ if __name__ == "__main__":
     model = torch.jit.script(model)
     
     model.load_state_dict(torch.load(model_state_dict))
+    model.eval()
+
     print(model)
 
     torch.jit.save(model, jit_model_save)
@@ -50,7 +52,6 @@ if __name__ == "__main__":
     sv_features = torch.rand((1, sv_features_dims, n_sv)).to(device)
     sv_mask = torch.ones((1, 1, n_sv)).to(device)
     
-    model.eval()
     with torch.no_grad():
         out = model(pf_points, pf_features, pf_mask, sv_points, sv_features, sv_mask)
     print('PyTorch:', out)
