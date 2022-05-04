@@ -89,6 +89,22 @@ inputs:
       vars:
          - sv_mask
 
+#length not used from batch_inputs at this point
+batch_inputs:
+   batch_shapes_pf_points:
+      length: 100
+   batch_shapes_pf_features:
+      length: 100
+   batch_shapes_pf_mask:
+      length: 100
+   batch_shapes_sv_points:
+      length: 100
+   batch_shapes_sv_features:
+      length: 100
+   batch_shapes_sv_mask:
+      length: 100
+   
+
 labels:
    ### type can be `simple`, `custom`
    ### [option 1] use `simple` for binary/multi-class classification, then `value` is a list of 0-1 labels

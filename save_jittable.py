@@ -25,7 +25,7 @@ if __name__ == "__main__":
     #import networks.particle_net_pf_sv_mass_regression as network_module
     
     model_state_dict = data_config_name.replace('.yaml','.pt')
-    jit_model_save = data_config_name.replace('.yaml','_gpu_jit.pt')
+    jit_model_save = data_config_name.replace('.yaml','_ragged_gpu_jit.pt')
     onnx_model = data_config_name.replace('.yaml','.onnx')
 
     data_config = SimpleIterDataset([], data_config_name, for_training=False).config

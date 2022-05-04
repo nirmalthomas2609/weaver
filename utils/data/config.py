@@ -38,6 +38,7 @@ class DataConfig(object):
             'preprocess': {'method': 'manual', 'data_fraction': 0.1, 'params': None},
             'new_variables': {},
             'inputs': {},
+            'batch_inputs': {},
             'labels': {},
             'observers': [],
             'monitor_variables': [],
@@ -63,11 +64,11 @@ class DataConfig(object):
         self._missing_standardization_info = False
         self.preprocess_params = opts['preprocess']['params'] if opts['preprocess']['params'] is not None else {}
         # inputs
-        self.input_names = tuple(opts['inputs'].keys())
+        self.input_names = tuple(opts['inputs'].keys()) + tuple(opts['batch_inputs'].keys())
         self.input_dicts = {k: [] for k in self.input_names}
         self.input_shapes = {}
         for k, o in opts['inputs'].items():
-            self.input_shapes[k] = (-1, len(o['vars']), o['length'])
+            self.input_shapes[k] = tuple([-1])
             for v in o['vars']:
                 v = _as_list(v)
                 self.input_dicts[k].append(v[0])
@@ -88,6 +89,10 @@ class DataConfig(object):
                     if params['center'] == 'auto':
                         self._missing_standardization_info = True
                     self.preprocess_params[v[0]] = params
+
+        for k, o in opts['batch_inputs'].items():
+            self.input_shapes[k] = (-1, 2)
+
         # labels
         self.label_type = opts['labels']['type']
         self.label_value = opts['labels']['value']

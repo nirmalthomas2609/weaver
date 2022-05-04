@@ -266,7 +266,35 @@ class ParticleNetTagger(nn.Module):
                               use_counts=use_counts,
                               for_inference=for_inference)
 
-    def forward(self, pf_points: Tensor, pf_features: Tensor, pf_mask: Tensor, sv_points: Tensor, sv_features: Tensor, sv_mask: Tensor) -> Tensor:
+    def reshape_ragged_features(self, features: Tensor, batch_input_shapes: Tensor) -> Tensor:
+        #batch_input_shapes is a tensor with shape [batch_size, 2], such batch_input_shapes[i] represents
+        #the intended shape of 'features' for the i-th jet 
+
+        batch_input_shapes = batch_input_shapes.tolist()
+        features_dim = batch_input_shapes[0][0]
+        segmented_features = torch.stack(torch.split(features, [item[1] * features_dim for item in batch_input_shapes]))
+        # print ("Segmented features - type {} | value {}".format(type(segmented_features), segmented_features))
+        return torch.reshape(segmented_features, (len(batch_input_shapes), features_dim, -1))
+
+    def forward(self, pf_points: Tensor, pf_features: Tensor, pf_mask: Tensor, sv_points: Tensor, sv_features: Tensor, sv_mask: Tensor, batch_shapes_pf_points: Tensor, batch_shapes_pf_features: Tensor, batch_shapes_pf_mask: Tensor, batch_shapes_sv_points: Tensor, batch_shapes_sv_features: Tensor, batch_shapes_sv_mask: Tensor) -> Tensor:
+        pf_points: Tensor = self.reshape_ragged_features(
+            pf_points, batch_shapes_pf_points)
+        pf_features: Tensor = self.reshape_ragged_features(
+            pf_features, batch_shapes_pf_features)
+        pf_mask: Tensor = self.reshape_ragged_features(pf_mask, batch_shapes_pf_mask)
+        sv_points: Tensor = self.reshape_ragged_features(
+            sv_points, batch_shapes_sv_points)
+        sv_features: Tensor = self.reshape_ragged_features(
+            sv_features, batch_shapes_sv_features)
+        sv_mask: Tensor = self.reshape_ragged_features(sv_mask, batch_shapes_sv_mask)
+
+        print ("Updated pf_points.shape - ", pf_points.shape)
+        print ("Updated pf_features.shape - ", pf_features.shape)
+        print ("Updated pf_mask.shape - ", pf_mask.shape)
+        print ("Updated sv_points.shape - ", sv_points.shape)
+        print ("Updated sv_features.shape - ", sv_features.shape)
+        print ("Updated sv_mask.shape - ", sv_mask.shape)
+
         if self.pf_input_dropout is not None:
             pf_mask = (self.pf_input_dropout(pf_mask) != 0).float()
             pf_points *= pf_mask
@@ -277,7 +305,10 @@ class ParticleNetTagger(nn.Module):
             sv_features *= sv_mask
 
         points = torch.cat((pf_points, sv_points), dim=2)
-        features = torch.cat((self.pf_conv(pf_features * pf_mask) * pf_mask, self.sv_conv(sv_features * sv_mask) * sv_mask), dim=2)
+        features = torch.cat((self.pf_conv(pf_features * pf_mask) *
+                             pf_mask, self.sv_conv(sv_features * sv_mask) * sv_mask), dim=2)
         mask = torch.cat((pf_mask, sv_mask), dim=2)
+
+
         return self.pn(points, features, mask)
 

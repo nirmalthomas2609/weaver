@@ -260,7 +260,7 @@ def onnx(args, model, data_config, model_info):
 
     os.makedirs(os.path.dirname(args.export_onnx), exist_ok=True)
     inputs = tuple(
-        torch.ones(model_info['input_shapes'][k], dtype=torch.float32) for k in model_info['input_names'])
+        torch.ones(model_info['input_shapes'][k], dtype=torch.float32) if ('batch_shapes_' not in k) else (torch.tensor([[len(data_config.input_dicts[k.replace('batch_shapes_', '')]), 1]], dtype=torch.int32)) for k in model_info['input_names'])
     torch.onnx.export(model, inputs, args.export_onnx,
                       input_names=model_info['input_names'],
                       output_names=model_info['output_names'],
@@ -271,6 +271,37 @@ def onnx(args, model, data_config, model_info):
     preprocessing_json = os.path.join(os.path.dirname(args.export_onnx), 'preprocess.json')
     data_config.export_json(preprocessing_json)
     _logger.info('Preprocessing parameters saved to %s', preprocessing_json)
+
+def onnx_local(export_onnx, model_prefix, model, data_config, model_info):
+    """
+    Saving model as ONNX.
+    :param args:
+    :param model:
+    :param data_config:
+    :param model_info:
+    :return:
+    """
+    assert (export_onnx.endswith('.onnx'))
+    model_path = model_prefix
+    _logger.info('Exporting model %s to ONNX' % model_path)
+    model.load_state_dict(torch.load(model_path, map_location='cpu'))
+    model = model.cpu()
+    model.eval()
+
+    os.makedirs(os.path.dirname(export_onnx), exist_ok=True)
+    inputs = tuple(
+        torch.ones(model_info['input_shapes'][k], dtype=torch.float32) if ('batch_shapes_' not in k) else (torch.tensor([[len(data_config.input_dicts[k.replace('batch_shapes_', '')]), 1]], dtype=torch.int32)) for k in model_info['input_names'])
+    torch.onnx.export(model, inputs, export_onnx,
+                      input_names=model_info['input_names'],
+                      output_names=model_info['output_names'],
+                      dynamic_axes=model_info.get('dynamic_axes', None),
+                      opset_version=13)
+    _logger.info('ONNX model saved to %s', export_onnx)
+
+    preprocessing_json = os.path.join(os.path.dirname(export_onnx), 'preprocess.json')
+    data_config.export_json(preprocessing_json)
+    _logger.info('Preprocessing parameters saved to %s', preprocessing_json)
+
 
 
 def flops(model, model_info):
