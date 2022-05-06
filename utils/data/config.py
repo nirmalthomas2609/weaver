@@ -67,31 +67,33 @@ class DataConfig(object):
         self.input_names = tuple(opts['inputs'].keys()) + tuple(opts['batch_inputs'].keys())
         self.input_dicts = {k: [] for k in self.input_names}
         self.input_shapes = {}
+        self.input_length = {}
         for k, o in opts['inputs'].items():
-            self.input_shapes[k] = tuple([-1])
-            for v in o['vars']:
-                v = _as_list(v)
-                self.input_dicts[k].append(v[0])
+            if ('batch_shapes_' not in k):
+                self.input_shapes[k] = tuple([-1])
+                self.input_length[k] = o['length']
+                for v in o['vars']:
+                    v = _as_list(v)
+                    self.input_dicts[k].append(v[0])
 
-                if opts['preprocess']['params'] is None:
+                    if opts['preprocess']['params'] is None:
 
-                    def _get(idx, default):
-                        try:
-                            return v[idx]
-                        except IndexError:
-                            return default
+                        def _get(idx, default):
+                            try:
+                                return v[idx]
+                            except IndexError:
+                                return default
 
-                    params = {'length': o['length'], 'pad_mode': o.get('pad_mode', 'constant').lower(),
-                              'center': _get(1, 'auto' if self._auto_standardization else None),
-                              'scale': _get(2, 1), 'min': _get(3, -5), 'max': _get(4, 5), 'pad_value': _get(5, 0)}
-                    if v[0] in self.preprocess_params and params != self.preprocess_params[v[0]]:
-                        raise RuntimeError('Incompatible info for variable %s, had: \n  %s\nnow got:\n  %s' % (v[0], str(self.preprocess_params[k]), str(params)))
-                    if params['center'] == 'auto':
-                        self._missing_standardization_info = True
-                    self.preprocess_params[v[0]] = params
-
-        for k, o in opts['batch_inputs'].items():
-            self.input_shapes[k] = (-1, 2)
+                        params = {'length': o['length'], 'pad_mode': o.get('pad_mode', 'constant').lower(),
+                                'center': _get(1, 'auto' if self._auto_standardization else None),
+                                'scale': _get(2, 1), 'min': _get(3, -5), 'max': _get(4, 5), 'pad_value': _get(5, 0)}
+                        if v[0] in self.preprocess_params and params != self.preprocess_params[v[0]]:
+                            raise RuntimeError('Incompatible info for variable %s, had: \n  %s\nnow got:\n  %s' % (v[0], str(self.preprocess_params[k]), str(params)))
+                        if params['center'] == 'auto':
+                            self._missing_standardization_info = True
+                        self.preprocess_params[v[0]] = params
+            else:
+                self.input_shapes[k] = (-1, 2)
 
         # labels
         self.label_type = opts['labels']['type']

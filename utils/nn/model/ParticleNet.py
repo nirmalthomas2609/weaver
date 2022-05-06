@@ -1,4 +1,5 @@
 import numpy as np
+from pyrsistent import v
 import torch
 import torch.nn as nn
 from torch import Tensor
@@ -251,8 +252,15 @@ class ParticleNetTagger(nn.Module):
                  pf_input_dropout=None,
                  sv_input_dropout=None,
                  for_inference=False,
+                 input_length = {},
                  **kwargs):
         super(ParticleNetTagger, self).__init__(**kwargs)
+        self.pf_features_dims = pf_features_dims
+        self.sv_features_dims = sv_features_dims
+        self.pf_points_dims = 2
+        self.sv_points_dims = 2
+        self.for_inference = for_inference
+        self.input_length = input_length
         self.pf_input_dropout = nn.Dropout(pf_input_dropout) if pf_input_dropout else None
         self.sv_input_dropout = nn.Dropout(sv_input_dropout) if sv_input_dropout else None
         self.pf_conv = FeatureConv(pf_features_dims, 32)
@@ -265,35 +273,37 @@ class ParticleNetTagger(nn.Module):
                               use_fts_bn=use_fts_bn,
                               use_counts=use_counts,
                               for_inference=for_inference)
+    
+    def reshape_ragged_features(self, features: Tensor, batch_input_shapes: Tensor, feature_dims: int, padding_value: int, padding_length: int) -> Tensor:
+        request_data_sizes = torch.mul(torch.select(batch_input_shapes, dim = 1, index = 0), torch.select(batch_input_shapes, dim = 1, index = 1))
+        # indices_tensor = torch.cumsum(torch.mul(torch.select(batch_input_shapes, dim = 1, index = 0), torch.select(batch_input_shapes, dim = 1, index = 1)))
+        # indices_tensor = torch.index_select(indices_tensor, dim = 0, index = torch.arange(indices_tensor.size(dim = 0) - 1))
 
-    def reshape_ragged_features(self, features: Tensor, batch_input_shapes: Tensor) -> Tensor:
-        #batch_input_shapes is a tensor with shape [batch_size, 2], such batch_input_shapes[i] represents
-        #the intended shape of 'features' for the i-th jet 
+        # features = torch.tensor_split(features, dim = 0, indices_tensor)
+        features = torch.split(features, [feature_dims] * (batch_input_shapes.size(dim = 0) - 1) + [features.size(dim = 0) - (feature_dims * (batch_input_shapes.size(dim=0) - 1))])
+        reshaped_features = tuple()
+        for feature_tensor in features:
+            feature_tensor = feature_tensor.reshape((feature_dims, -1))
+            reshaped_features += (nn.functional.pad(feature_tensor, (0, padding_length - feature_tensor.size(dim = -1)), value = padding_value),)
 
-        batch_input_shapes = batch_input_shapes.tolist()
-        features_dim = batch_input_shapes[0][0]
-        segmented_features = torch.stack(torch.split(features, [item[1] * features_dim for item in batch_input_shapes]))
-        # print ("Segmented features - type {} | value {}".format(type(segmented_features), segmented_features))
-        return torch.reshape(segmented_features, (len(batch_input_shapes), features_dim, -1))
+        return torch.stack(reshaped_features)
 
     def forward(self, pf_points: Tensor, pf_features: Tensor, pf_mask: Tensor, sv_points: Tensor, sv_features: Tensor, sv_mask: Tensor, batch_shapes_pf_points: Tensor, batch_shapes_pf_features: Tensor, batch_shapes_pf_mask: Tensor, batch_shapes_sv_points: Tensor, batch_shapes_sv_features: Tensor, batch_shapes_sv_mask: Tensor) -> Tensor:
-        pf_points: Tensor = self.reshape_ragged_features(
-            pf_points, batch_shapes_pf_points)
-        pf_features: Tensor = self.reshape_ragged_features(
-            pf_features, batch_shapes_pf_features)
-        pf_mask: Tensor = self.reshape_ragged_features(pf_mask, batch_shapes_pf_mask)
-        sv_points: Tensor = self.reshape_ragged_features(
-            sv_points, batch_shapes_sv_points)
-        sv_features: Tensor = self.reshape_ragged_features(
-            sv_features, batch_shapes_sv_features)
-        sv_mask: Tensor = self.reshape_ragged_features(sv_mask, batch_shapes_sv_mask)
+        if self.for_inference:
+            pf_features = self.reshape_ragged_features(pf_features, batch_shapes_pf_features, self.pf_features_dims, 0, self.input_length.get('pf_features', 100))
+            pf_points = self.reshape_ragged_features(pf_points, batch_shapes_pf_points, self.pf_points_dims, 0, self.input_length.get('pf_points', 100))
+            pf_mask = self.reshape_ragged_features(pf_mask, batch_shapes_pf_mask, 1, 0, self.input_length.get('pf_mask', 100))
+            sv_features = self.reshape_ragged_features(sv_features, batch_shapes_sv_features, self.sv_features_dims, 0, self.input_length.get('sv_features', 10))
+            sv_points = self.reshape_ragged_features(sv_points, batch_shapes_sv_points, self.sv_points_dims, 0, self.input_length.get('sv_points', 10))
+            sv_mask = self.reshape_ragged_features(sv_mask, batch_shapes_sv_mask, 1, 0, self.input_length.get('sv_mask', 10))
 
-        print ("Updated pf_points.shape - ", pf_points.shape)
-        print ("Updated pf_features.shape - ", pf_features.shape)
-        print ("Updated pf_mask.shape - ", pf_mask.shape)
-        print ("Updated sv_points.shape - ", sv_points.shape)
-        print ("Updated sv_features.shape - ", sv_features.shape)
-        print ("Updated sv_mask.shape - ", sv_mask.shape)
+
+        print ("Shape pf_features - ", pf_features.shape)
+        print ("Shape pf points - ", pf_points.shape)
+        print ("Shape pf mask - ", pf_mask.shape)
+        print ("Shape sv features - ", sv_features.shape)
+        print ("Shape sv points - ", sv_points.shape)
+        print ("Shape sv mask shape - ", sv_mask.shape)
 
         if self.pf_input_dropout is not None:
             pf_mask = (self.pf_input_dropout(pf_mask) != 0).float()

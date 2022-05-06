@@ -260,7 +260,7 @@ def onnx(args, model, data_config, model_info):
 
     os.makedirs(os.path.dirname(args.export_onnx), exist_ok=True)
     inputs = tuple(
-        torch.ones(model_info['input_shapes'][k], dtype=torch.float32) if ('batch_shapes_' not in k) else (torch.tensor([[len(data_config.input_dicts[k.replace('batch_shapes_', '')]), 1]], dtype=torch.int32)) for k in model_info['input_names'])
+        torch.ones(model_info['input_shapes'][k], dtype=torch.float32) if ('batch_shapes_' not in k) else (torch.tensor([[len(data_config.input_dicts[k.replace('batch_shapes_', '')]), data_config.input_length[k.replace('batch_shapes_', '')]]], dtype=torch.int32)) for k in model_info['input_names'])
     torch.onnx.export(model, inputs, args.export_onnx,
                       input_names=model_info['input_names'],
                       output_names=model_info['output_names'],
@@ -290,7 +290,7 @@ def onnx_local(export_onnx, model_prefix, model, data_config, model_info):
 
     os.makedirs(os.path.dirname(export_onnx), exist_ok=True)
     inputs = tuple(
-        torch.ones(model_info['input_shapes'][k], dtype=torch.float32) if ('batch_shapes_' not in k) else (torch.tensor([[len(data_config.input_dicts[k.replace('batch_shapes_', '')]), 1]], dtype=torch.int32)) for k in model_info['input_names'])
+        torch.ones(model_info['input_shapes'][k], dtype=torch.float32) if ('batch_shapes_' not in k) else (torch.tensor([[len(data_config.input_dicts[k.replace('batch_shapes_', '')]), data_config.input_length[k.replace('batch_shapes_', '')]]], dtype=torch.int32)) for k in model_info['input_names'])
     torch.onnx.export(model, inputs, export_onnx,
                       input_names=model_info['input_names'],
                       output_names=model_info['output_names'],
