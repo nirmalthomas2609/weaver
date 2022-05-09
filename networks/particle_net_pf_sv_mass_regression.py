@@ -25,14 +25,15 @@ def get_model(data_config, **kwargs):
                               use_counts=kwargs.get('use_counts', True),
                               pf_input_dropout=kwargs.get('pf_input_dropout', None),
                               sv_input_dropout=kwargs.get('sv_input_dropout', None),
-                              for_inference=False,
+                              for_inference=kwargs.get('for_inference', False),
+                              input_length = data_config.input_length
                               )
 
     model_info = {
-        'input_names': list(data_config.input_names),
-        'input_shapes': {k: ((1,) + s[1:]) for k, s in data_config.input_shapes.items()},
-        'output_names': ['output'],
-        'dynamic_axes': {**{k: {0: 'N', 2: 'n_' + k.split('_')[0]} for k in data_config.input_names}, **{'output': {0: 'N'}}},
+        'input_names':list(data_config.input_names),
+        'input_shapes':{k:((len(data_config.input_dicts[k]) * data_config.input_length[k],) if 'batch_shapes_' not in k else (1, 2)) for k, _s in data_config.input_shapes.items()},
+        'output_names':['output'],
+        'dynamic_axes':{**{k: ({0:'n_' + k.split('_')[0]} if 'batch_shapes' not in k else {0: 'N'}) for k in data_config.input_names}, **{'output':{0:'N'}}},
         }
 
     return model, model_info
