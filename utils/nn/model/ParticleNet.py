@@ -276,11 +276,11 @@ class ParticleNetTagger(nn.Module):
     
     def reshape_ragged_features(self, features: Tensor, batch_input_shapes: Tensor, feature_dims: int, padding_value: int, padding_length: int) -> Tensor:
         # request_data_sizes = torch.mul(torch.select(batch_input_shapes, dim = 1, index = 0), torch.select(batch_input_shapes, dim = 1, index = 1))
-        # indices_tensor = torch.cumsum(torch.mul(torch.select(batch_input_shapes, dim = 1, index = 0), torch.select(batch_input_shapes, dim = 1, index = 1)))
-        # indices_tensor = torch.index_select(indices_tensor, dim = 0, index = torch.arange(indices_tensor.size(dim = 0) - 1))
+        indices_tensor = torch.cumsum(torch.mul(torch.select(batch_input_shapes, dim = 1, index = 0), torch.select(batch_input_shapes, dim = 1, index = 1)))
+        indices_tensor = torch.index_select(indices_tensor, dim = 0, index = torch.arange(indices_tensor.size(dim = 0) - 1))
 
-        # features = torch.tensor_split(features, dim = 0, indices_tensor)
-        features = torch.split(features, [feature_dims] * (batch_input_shapes.size(dim = 0) - 1) + [features.size(dim = 0) - (feature_dims * (batch_input_shapes.size(dim=0) - 1))])
+        features = torch.hsplit(features, indices_tensor)
+        # features = torch.split(features, [feature_dims] * (batch_input_shapes.size(dim = 0) - 1) + [features.size(dim = 0) - (feature_dims * (batch_input_shapes.size(dim=0) - 1))])
         reshaped_features = []
         for feature_tensor in features:
             feature_tensor = feature_tensor.reshape((feature_dims, -1))
