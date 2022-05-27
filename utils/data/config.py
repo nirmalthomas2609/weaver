@@ -69,7 +69,8 @@ class DataConfig(object):
         self.input_shapes = {}
         self.input_length = {}
         for k, o in opts['inputs'].items():
-            if ('batch_shapes_' not in k):
+            if ('batch_count_' not in k):
+                print ("K = ", k)
                 self.input_shapes[k] = tuple([-1])
                 self.input_length[k] = o['length']
                 for v in o['vars']:
@@ -93,7 +94,7 @@ class DataConfig(object):
                             self._missing_standardization_info = True
                         self.preprocess_params[v[0]] = params
             else:
-                self.input_shapes[k] = (-1, 2)
+                self.input_shapes[k] = (-1, )
 
         # labels
         self.label_type = opts['labels']['type']

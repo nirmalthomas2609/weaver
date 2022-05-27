@@ -27,9 +27,9 @@ def get_model(data_config, **kwargs):
 
     model_info = {
         'input_names':list(data_config.input_names),
-        'input_shapes':{k:((len(data_config.input_dicts[k]) * data_config.input_length[k],) if 'batch_shapes_' not in k else (1, 2)) for k, _s in data_config.input_shapes.items()},
+        'input_shapes':{k:((len(data_config.input_dicts[k]) * data_config.input_length[k],) if 'batch_count_' not in k else (1, )) for k, _s in data_config.input_shapes.items()},
         'output_names':['softmax'],
-        'dynamic_axes':{**{k: ({0:'n_' + k.split('_')[0]} if 'batch_shapes' not in k else {0: 'N'}) for k in data_config.input_names}, **{'softmax':{0:'N'}}},
+        'dynamic_axes':{**{k: ({0:'n_' + k.split('_')[0] + '_' + k.split('_')[1]} if 'batch_count' not in k else {0: 'N'}) for k in data_config.input_names}, **{'softmax':{0:'N'}}},
         }
 
     return model, model_info
