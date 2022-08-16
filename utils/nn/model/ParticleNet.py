@@ -276,31 +276,23 @@ class ParticleNetTagger(nn.Module):
     
     def reshape_ragged_features(self, features: Tensor, batch_input_shapes: Tensor, feature_dims: int, padding_value: int, padding_length: int) -> Tensor:
         index1_tensor_shapes = torch.select(batch_input_shapes, dim = 1, index = 1)
-        index0_tensor_shapes = torch.select(batch_input_shapes, dim = 1, index = 0)
-        indices_tensor = torch.cumsum(index0_tensor_shapes * index1_tensor_shapes, dim = 0)[:-1]
-        print ("Indices tensor - ", indices_tensor)
-
-        split_list_feature_tensors = torch.tensor_split(features, indices_tensor)
-        for item in split_list_feature_tensors:
-            print ("Item shape - ", item.shape)
-        return torch.stack([nn.functional.pad(feature_tensor.reshape((feature_dims, -1)), (0, (padding_length - feature_tensor.reshape((feature_dims, -1)).size(dim=-1))), value=float(padding_value)) for feature_tensor in split_list_feature_tensors])
+        indices_tensor = torch.cumsum(feature_dims * index1_tensor_shapes, dim = 0)
+        split_list_feature_tensors = [features]
+        if indices_tensor.size(dim = -1) != 1:
+            split_list_feature_tensors = torch.tensor_split(features, indices_tensor[:-1])
+        reshaped_tensors = list()
+        for feature_tensor in split_list_feature_tensors:
+            reshaped_tensor = feature_tensor.reshape((feature_dims, -1))
+            reshaped_tensors.append(nn.functional.pad(reshaped_tensor, (0, padding_length - reshaped_tensor.size(dim = -1)), value = float(padding_value)))
+        return torch.stack(reshaped_tensors)
 
     def forward(self, pf_points: Tensor, pf_features: Tensor, pf_mask: Tensor, sv_points: Tensor, sv_features: Tensor, sv_mask: Tensor, batch_shapes_pf_points: Tensor, batch_shapes_pf_features: Tensor, batch_shapes_pf_mask: Tensor, batch_shapes_sv_points: Tensor, batch_shapes_sv_features: Tensor, batch_shapes_sv_mask: Tensor) -> Tensor:
-        # if self.for_inference:
         pf_points = self.reshape_ragged_features(pf_points, batch_shapes_pf_points, self.pf_points_dims, 0, self.input_length.get('pf_points', 100))
         pf_features = self.reshape_ragged_features(pf_features, batch_shapes_pf_features, self.pf_features_dims, 0, self.input_length.get('pf_features', 100))
         pf_mask = self.reshape_ragged_features(pf_mask, batch_shapes_pf_mask, 1, 0, self.input_length.get('pf_mask', 100))
         sv_points = self.reshape_ragged_features(sv_points, batch_shapes_sv_points, self.sv_points_dims, 0, self.input_length.get('sv_points', 10))
         sv_features = self.reshape_ragged_features(sv_features, batch_shapes_sv_features, self.sv_features_dims, 0, self.input_length.get('sv_features', 10))
         sv_mask = self.reshape_ragged_features(sv_mask, batch_shapes_sv_mask, 1, 0, self.input_length.get('sv_mask', 10))
-
-
-        # print ("Shape pf_features - ", pf_features.shape)
-        # print ("Shape pf points - ", pf_points.shape)
-        # print ("Shape pf mask - ", pf_mask.shape)
-        # print ("Shape sv features - ", sv_features.shape)
-        # print ("Shape sv points - ", sv_points.shape)
-        # print ("Shape sv mask shape - ", sv_mask.shape)
 
         if self.pf_input_dropout is not None:
             pf_mask = (self.pf_input_dropout(pf_mask) != 0).float()
