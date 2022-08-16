@@ -130,3 +130,5 @@ dmypy.json
 
 #Models
 *.onnx
+data/*.onnx
+data/*.pt
