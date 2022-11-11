@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 from typing import Optional
+import torch.autograd.profiler as profiler
 
 '''Based on https://github.com/WangYueFt/dgcnn/blob/master/pytorch/model.py.'''
 
@@ -274,6 +275,8 @@ class ParticleNetTagger(nn.Module):
                               for_inference=for_inference)
     
     def reshape_ragged_features(self, features: Tensor, batch_input_shapes: Tensor, feature_dims: int, padding_value: int, padding_length: int) -> Tensor:
+        batch_input_shapes = batch_input_shapes.reshape((-1, 2)) # Flattened Ragged 
+
         index1_tensor_shapes = torch.select(batch_input_shapes, dim = 1, index = 1)
         indices_tensor = torch.cumsum(feature_dims * index1_tensor_shapes, dim = 0)
         split_list_feature_tensors = [features]
@@ -286,26 +289,28 @@ class ParticleNetTagger(nn.Module):
         return torch.stack(reshaped_tensors)
 
     def forward(self, pf_points: Tensor, pf_features: Tensor, pf_mask: Tensor, sv_points: Tensor, sv_features: Tensor, sv_mask: Tensor, batch_shapes_pf_points: Tensor, batch_shapes_pf_features: Tensor, batch_shapes_pf_mask: Tensor, batch_shapes_sv_points: Tensor, batch_shapes_sv_features: Tensor, batch_shapes_sv_mask: Tensor) -> Tensor:
-        pf_points = self.reshape_ragged_features(pf_points, batch_shapes_pf_points, self.pf_points_dims, 0, self.input_length.get('pf_points', 100))
-        pf_features = self.reshape_ragged_features(pf_features, batch_shapes_pf_features, self.pf_features_dims, 0, self.input_length.get('pf_features', 100))
-        pf_mask = self.reshape_ragged_features(pf_mask, batch_shapes_pf_mask, 1, 0, self.input_length.get('pf_mask', 100))
-        sv_points = self.reshape_ragged_features(sv_points, batch_shapes_sv_points, self.sv_points_dims, 0, self.input_length.get('sv_points', 10))
-        sv_features = self.reshape_ragged_features(sv_features, batch_shapes_sv_features, self.sv_features_dims, 0, self.input_length.get('sv_features', 10))
-        sv_mask = self.reshape_ragged_features(sv_mask, batch_shapes_sv_mask, 1, 0, self.input_length.get('sv_mask', 10))
+        with profiler.record_function("RESHAPE-PASS"):    
+            pf_points = self.reshape_ragged_features(pf_points, batch_shapes_pf_points, self.pf_points_dims, 0, self.input_length.get('pf_points', 100))
+            pf_features = self.reshape_ragged_features(pf_features, batch_shapes_pf_features, self.pf_features_dims, 0, self.input_length.get('pf_features', 100))
+            pf_mask = self.reshape_ragged_features(pf_mask, batch_shapes_pf_mask, 1, 0, self.input_length.get('pf_mask', 100))
+            sv_points = self.reshape_ragged_features(sv_points, batch_shapes_sv_points, self.sv_points_dims, 0, self.input_length.get('sv_points', 10))
+            sv_features = self.reshape_ragged_features(sv_features, batch_shapes_sv_features, self.sv_features_dims, 0, self.input_length.get('sv_features', 10))
+            sv_mask = self.reshape_ragged_features(sv_mask, batch_shapes_sv_mask, 1, 0, self.input_length.get('sv_mask', 10))
 
-        if self.pf_input_dropout is not None:
-            pf_mask = (self.pf_input_dropout(pf_mask) != 0).float()
-            pf_points *= pf_mask
-            pf_features *= pf_mask
-        if self.sv_input_dropout is not None:
-            sv_mask = (self.sv_input_dropout(sv_mask) != 0).float()
-            sv_points *= sv_mask
-            sv_features *= sv_mask
+        with profiler.record_function("FORWARD-CONVOLUTIONS"):
+            if self.pf_input_dropout is not None:
+                pf_mask = (self.pf_input_dropout(pf_mask) != 0).float()
+                pf_points *= pf_mask
+                pf_features *= pf_mask
+            if self.sv_input_dropout is not None:
+                sv_mask = (self.sv_input_dropout(sv_mask) != 0).float()
+                sv_points *= sv_mask
+                sv_features *= sv_mask
 
-        points = torch.cat((pf_points, sv_points), dim=2)
-        features = torch.cat((self.pf_conv(pf_features * pf_mask) *
-                             pf_mask, self.sv_conv(sv_features * sv_mask) * sv_mask), dim=2)
-        mask = torch.cat((pf_mask, sv_mask), dim=2)
+            points = torch.cat((pf_points, sv_points), dim=2)
+            features = torch.cat((self.pf_conv(pf_features * pf_mask) *
+                                pf_mask, self.sv_conv(sv_features * sv_mask) * sv_mask), dim=2)
+            mask = torch.cat((pf_mask, sv_mask), dim=2)
 
 
         return self.pn(points, features, mask)
